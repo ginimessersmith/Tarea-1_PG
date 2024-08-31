@@ -2,7 +2,6 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
-using OpenTK.Graphics.OpenGL;
 
 
 namespace ConsoleApp1
@@ -65,6 +64,71 @@ namespace ConsoleApp1
         new Poligono(new List<Punto> { puntosDelCubo[1], puntosDelCubo[2], puntosDelCubo[6], puntosDelCubo[5] }, 0.0f, 1.0f, 1.0f)  // Cyan
     };
 
+            List<Punto> puntosDeLaT = new List<Punto>
+{
+    // Parte superior de la T (Rectángulo Horizontal - Frente)
+    new Punto(-1.0f,  0.5f,  0.1f),  // Frente - Superior Izquierda
+    new Punto( 1.0f,  0.5f,  0.1f),  // Frente - Superior Derecha
+    new Punto( 1.0f,  1.0f,  0.1f),  // Frente - Inferior Derecha
+    new Punto(-1.0f,  1.0f,  0.1f),  // Frente - Inferior Izquierda
+
+    // Tronco de la T (Rectángulo Vertical - Frente)
+    new Punto(-0.5f, -1.0f,  0.1f), // Frente - Inferior Izquierda
+    new Punto( 0.5f, -1.0f,  0.1f), // Frente - Inferior Derecha
+    new Punto( 0.5f,  0.5f,  0.1f), // Frente - Superior Derecha
+    new Punto(-0.5f,  0.5f,  0.1f), // Frente - Superior Izquierda
+
+    // Parte superior de la T (Rectángulo Horizontal - Atrás)
+    new Punto(-1.0f,  0.5f, -0.1f),  // Atrás - Superior Izquierda
+    new Punto( 1.0f,  0.5f, -0.1f),  // Atrás - Superior Derecha
+    new Punto( 1.0f,  1.0f, -0.1f),  // Atrás - Inferior Derecha
+    new Punto(-1.0f,  1.0f, -0.1f),  // Atrás - Inferior Izquierda
+
+    // Tronco de la T (Rectángulo Vertical - Atrás)
+    new Punto(-0.5f, -1.0f, -0.1f), // Atrás - Inferior Izquierda
+    new Punto( 0.5f, -1.0f, -0.1f), // Atrás - Inferior Derecha
+    new Punto( 0.5f,  0.5f, -0.1f), // Atrás - Superior Derecha
+    new Punto(-0.5f,  0.5f, -0.1f), // Atrás - Superior Izquierda
+};
+
+
+            List<Poligono> carasDeLaT = new List<Poligono>
+{
+    // Parte superior de la T (Rectángulo Horizontal - Frente)
+    new Poligono(new List<Punto> { puntosDeLaT[0], puntosDeLaT[1], puntosDeLaT[2], puntosDeLaT[3] }, 1.0f, 0.0f, 0.0f), // Rojo
+
+    // Tronco de la T (Rectángulo Vertical - Frente)
+    new Poligono(new List<Punto> { puntosDeLaT[4], puntosDeLaT[5], puntosDeLaT[6], puntosDeLaT[7] }, 0.0f, 1.0f, 0.0f), // Verde
+
+    // Parte superior de la T (Rectángulo Horizontal - Atrás)
+    new Poligono(new List<Punto> { puntosDeLaT[8], puntosDeLaT[9], puntosDeLaT[10], puntosDeLaT[11] }, 1.0f, 0.0f, 0.0f), // Rojo
+
+    // Tronco de la T (Rectángulo Vertical - Atrás)
+    new Poligono(new List<Punto> { puntosDeLaT[12], puntosDeLaT[13], puntosDeLaT[14], puntosDeLaT[15] }, 0.0f, 1.0f, 0.0f), // Verde
+
+    // Conexiones laterales
+    // Lado derecho superior de la T
+    new Poligono(new List<Punto> { puntosDeLaT[1], puntosDeLaT[9], puntosDeLaT[10], puntosDeLaT[2] }, 0.0f, 0.0f, 1.0f), // Azul
+    // Lado izquierdo superior de la T
+    new Poligono(new List<Punto> { puntosDeLaT[0], puntosDeLaT[8], puntosDeLaT[11], puntosDeLaT[3] }, 1.0f, 1.0f, 0.0f), // Amarillo
+    // Lado derecho del tronco de la T
+    new Poligono(new List<Punto> { puntosDeLaT[5], puntosDeLaT[13], puntosDeLaT[14], puntosDeLaT[6] }, 0.0f, 1.0f, 1.0f), // Cyan
+    // Lado izquierdo del tronco de la T
+    new Poligono(new List<Punto> { puntosDeLaT[4], puntosDeLaT[12], puntosDeLaT[15], puntosDeLaT[7] }, 1.0f, 0.0f, 1.0f), // Magenta
+
+    // Conexión entre la parte superior y el tronco (cara inferior)
+    new Poligono(new List<Punto> { puntosDeLaT[3], puntosDeLaT[11], puntosDeLaT[15], puntosDeLaT[7] }, 1.0f, 0.5f, 0.5f), // Naranja
+    
+    //new Poligono(new List<Punto> { puntosDeLaT[0], puntosDeLaT[8], puntosDeLaT[12], puntosDeLaT[4] }, 0.5f, 1.0f, 0.5f), // Verde claro
+};
+
+
+            Objeto letraT = new Objeto();
+            foreach (var cara in carasDeLaT)
+            {
+                letraT.AddPoligono(cara);
+            }
+
             // Crear el objeto cubo
             Objeto cubo = new Objeto();
             foreach (var cara in carasDelCubo)
@@ -105,6 +169,8 @@ namespace ConsoleApp1
             }
             cubo5.SetCentroDeMasa(new Punto(2.0f, 2.0f, 0.0f));
 
+            letraT.SetCentroDeMasa(new Punto(-2.0f, 3.0f, 0.0f));
+
 
             // Crear el escenario y agregar ambos objetos
             escenario = new Escenario();
@@ -113,6 +179,8 @@ namespace ConsoleApp1
             escenario.AddObjeto(cubo3);
             escenario.AddObjeto(cubo4);
             escenario.AddObjeto(cubo5);
+            escenario.AddObjeto(letraT);
+            // agregar la clase parte el objeto se debe descomponer en partes, las partes son poligonos
 
 
         }
@@ -192,8 +260,8 @@ namespace ConsoleApp1
             // Limitar el zoom para evitar que pase a través del objeto o se aleje demasiado
             if (zoom < 1.0f)
                 zoom = 1.0f;
-            if (zoom > 10.0f)
-                zoom = 10.0f;
+            if (zoom > 20.0f)
+                zoom = 20.0f;
         }
 
 
