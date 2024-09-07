@@ -12,7 +12,7 @@ namespace Tutorial
         static void Main(string[] args) {
             Console.WriteLine("hola mundo");
 
-            using (Game game = new(500, 500)) 
+            using (Game game = new(800, 800)) 
             {
                 game.Run();
             }

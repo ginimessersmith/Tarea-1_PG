@@ -1,50 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL;
-
 
 namespace ConsoleApp1
 {
     internal class Objeto
     {
-        private List<Poligono> listaDePoligonos;
+        // Cambiar listaDePartes de List a Dictionary
+        private Dictionary<string, Parte> listaDePartes;
         private Punto centroDeMasa;
-
 
         public Objeto()
         {
-            listaDePoligonos = new List<Poligono>();
+            // Inicializar el diccionario en lugar de la lista
+            listaDePartes = new Dictionary<string, Parte>();
             centroDeMasa = new Punto(0.0f, 0.0f, 0.0f); // Inicialmente en el origen
         }
 
-        public void AddPoligono(Poligono poligono)
+        // Cambiar AddParte para recibir un nombre de parte
+        public void AddParte(string nombreParte, Parte parte)
         {
-            listaDePoligonos.Add(poligono);
+            listaDePartes[nombreParte] = parte; // Añadir o actualizar la parte
         }
 
         public void Dibujar()
         {
-            // Aplicar la traslación al centro de masa antes de dibujar cada polígono
+            // Aplicar la traslación al centro de masa antes de dibujar cada parte
             GL.PushMatrix();
             GL.Translate(centroDeMasa.X, centroDeMasa.Y, centroDeMasa.Z);
 
-            foreach (var poligono in listaDePoligonos)
+            foreach (var parte in listaDePartes.Values)
             {
-                poligono.Dibujar();
+                parte.Dibujar();
             }
 
             GL.PopMatrix();
         }
+
         public void SetCentroDeMasa(Punto nuevoCentro)
         {
             centroDeMasa = nuevoCentro;
         }
-        public List<Poligono> GetPoligonos()
+
+        // Obtener una parte por su nombre
+        public Parte GetParte(string nombreParte)
         {
-            return listaDePoligonos;
+            return listaDePartes.ContainsKey(nombreParte) ? listaDePartes[nombreParte] : null;
+        }
+
+        // Eliminar una parte por su nombre (Delete)
+        public bool RemoveParte(string nombreParte)
+        {
+            if (listaDePartes.ContainsKey(nombreParte))
+            {
+                listaDePartes.Remove(nombreParte);
+                return true;
+            }
+            return false;
+        }
+
+        // Obtener todas las partes
+        public Dictionary<string, Parte> GetPartes()
+        {
+            return listaDePartes;
         }
     }
 }

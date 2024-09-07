@@ -22,7 +22,7 @@ namespace ConsoleApp1
 
         public void Dibujar()
         {
-            GL.Begin(PrimitiveType.Quads); // Cambiado de Polygon a Quads
+            GL.Begin(PrimitiveType.Polygon); // Cambiado de Polygon a Quads
             GL.Color3(color[0], color[1], color[2]);
 
             foreach (var punto in puntos)
@@ -37,5 +37,11 @@ namespace ConsoleApp1
         {
             return puntos;
         }
+
+        public float[] GetColor()
+        {
+            return color;
+        }
+
     }
 }

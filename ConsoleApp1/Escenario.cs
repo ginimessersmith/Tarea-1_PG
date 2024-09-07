@@ -1,35 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace ConsoleApp1
 {
     internal class Escenario
     {
 
-        private List<Objeto> listaDeObjetos;
+        private Dictionary<string, Objeto> listaDeObjetos;
 
         public Escenario()
         {
-            listaDeObjetos = new List<Objeto>();
+            listaDeObjetos = new Dictionary<string, Objeto>();
         }
 
-        public void AddObjeto(Objeto objeto)
+        public void AddObjeto(string nombreObjeto, Objeto objeto)
         {
-            listaDeObjetos.Add(objeto);
+            listaDeObjetos[nombreObjeto] = objeto;
         }
 
         public void DibujarEscenario()
         {
-            foreach (var objeto in listaDeObjetos)
+            foreach (var objeto in listaDeObjetos.Values)
             {
                 objeto.Dibujar();
             }
         }
 
-        public List<Objeto> GetObjetos()
+        public Objeto GetObjeto(string nombreObjeto)
+        {
+            return listaDeObjetos.ContainsKey(nombreObjeto) ? listaDeObjetos[nombreObjeto] : null;
+        }
+
+        public bool RemoveObjeto(string nombreObjeto)
+        {
+            if (listaDeObjetos.ContainsKey(nombreObjeto))
+            {
+                listaDeObjetos.Remove(nombreObjeto);
+                return true;
+            }
+            return false;
+        }
+
+        public void UpdateObjeto(string nombreObjeto, Objeto objetoActualizado)
+        {
+            if (listaDeObjetos.ContainsKey(nombreObjeto))
+            {
+                listaDeObjetos[nombreObjeto] = objetoActualizado;
+            }
+        }
+
+        public Dictionary<string, Objeto> GetObjetos()
         {
             return listaDeObjetos;
         }
