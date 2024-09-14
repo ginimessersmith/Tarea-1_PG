@@ -19,6 +19,20 @@ namespace ConsoleApp1
             Z = z;
         }
 
+        public Punto()
+        {
+            X = Y = Z = 0.0f;
+        }
+        public Punto(float v)
+        {
+            X = Y = Z = v;
+        }
+    
+        public Punto(Punto p)
+        {
+            X = p.X; Y = p.Y; Z = p.Z;
+        }
+
         public override string ToString()
         {
             return $"({X}, {Y}, {Z})";

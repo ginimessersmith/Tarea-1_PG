@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 namespace ConsoleApp1
@@ -8,12 +9,23 @@ namespace ConsoleApp1
         // Cambiar listaDePartes de List a Dictionary
         private Dictionary<string, Parte> listaDePartes;
         private Punto centroDeMasa;
+        private float anguloRotacion;
+        private float ejeX, ejeY, ejeZ;
+        private Matrix4 transformationMatrix;
+        private Vector3 ejeRotacion;
+
 
         public Objeto()
         {
-            // Inicializar el diccionario en lugar de la lista
+    
             listaDePartes = new Dictionary<string, Parte>();
             centroDeMasa = new Punto(0.0f, 0.0f, 0.0f); // Inicialmente en el origen
+            anguloRotacion = 0.0f;
+            ejeX = 0.0f;
+            ejeY = 0.0f;
+            ejeZ = 0.0f;
+            transformationMatrix = Matrix4.Identity;
+            ejeRotacion = Vector3.UnitY;
         }
 
         // Cambiar AddParte para recibir un nombre de parte
@@ -22,12 +34,23 @@ namespace ConsoleApp1
             listaDePartes[nombreParte] = parte; // Añadir o actualizar la parte
         }
 
+        public void Rotar(Vector3 axis, float angleInDegrees)
+        {
+            ejeRotacion = axis;
+            anguloRotacion += angleInDegrees;
+        }
+
         public void Dibujar()
         {
-            // Aplicar la traslación al centro de masa antes de dibujar cada parte
             GL.PushMatrix();
-            GL.Translate(centroDeMasa.X, centroDeMasa.Y, centroDeMasa.Z);
 
+            // Mover al centro de masa
+            GL.Translate(-centroDeMasa.X, -centroDeMasa.Y, -centroDeMasa.Z);
+
+            // Aplicar la rotación
+            GL.Rotate(anguloRotacion, ejeRotacion.X, ejeRotacion.Y, ejeRotacion.Z);
+
+            // Dibujar cada parte
             foreach (var parte in listaDePartes.Values)
             {
                 parte.Dibujar();
@@ -39,6 +62,7 @@ namespace ConsoleApp1
         public void SetCentroDeMasa(Punto nuevoCentro)
         {
             centroDeMasa = nuevoCentro;
+            AjustarCentroDeMasa();
         }
 
         // Obtener una parte por su nombre
@@ -62,6 +86,22 @@ namespace ConsoleApp1
         public Dictionary<string, Parte> GetPartes()
         {
             return listaDePartes;
+        }
+        private void AjustarCentroDeMasa()
+        {
+            foreach (var parte in listaDePartes.Values)
+            {
+                parte.AjustarCentroDeMasa(centroDeMasa);
+            }
+        }
+
+        public Punto GetCentroDeMasa()
+        {
+            return centroDeMasa;
+        }
+
+        public void setListaPartes(Dictionary<string, Parte> nuevaListaDePartes) { 
+        this.listaDePartes = nuevaListaDePartes;
         }
     }
 }

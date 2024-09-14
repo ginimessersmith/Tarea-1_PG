@@ -8,129 +8,164 @@ namespace ConsoleApp1
 {
     internal class AdministradorObjetos
     {
-        public void GuardarObjetos(Escenario escenario, string archivo)
+        public void GuardarObjetos(Objeto objeto, string nombreArchivo)
         {
-          
-            EscenarioData escenarioData = ConvertirEscenarioAData(escenario);
+            // Convertir el objeto a DTO
+            ObjetoDTO objetoDTO = objeto.ToDTO();
 
-            string jsonData = JsonSerializer.Serialize(escenarioData, new JsonSerializerOptions { WriteIndented = true });
+            // Serializar a JSON
+            string json = JsonSerializer.Serialize(objetoDTO, new JsonSerializerOptions { WriteIndented = true });
 
-            File.WriteAllText(archivo, jsonData);
+            // Obtener la ruta del directorio del proyecto
+            string directorioProyecto = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Crear la ruta completa del archivo
+            string rutaArchivo = Path.Combine(directorioProyecto, nombreArchivo);
+            Console.WriteLine(rutaArchivo);
+
+            // Guardar en archivo
+            File.WriteAllText(rutaArchivo, json);
         }
 
-        // Método para cargar los objetos desde un archivo JSON
-        public Escenario CargarObjetos(string archivo)
+        public Objeto CargarDesdeJSON(string nombreArchivo)
         {
-       
-            string jsonData = File.ReadAllText(archivo);
-     
-            EscenarioData escenarioData = JsonSerializer.Deserialize<EscenarioData>(jsonData);
+            // Obtener la ruta del directorio del proyecto
+            string directorioProyecto = AppDomain.CurrentDomain.BaseDirectory;
 
-            return ConvertirDataAEscenario(escenarioData);
+            // Crear la ruta completa del archivo
+            string rutaArchivo = Path.Combine(directorioProyecto, nombreArchivo);
+
+            // Leer el contenido del archivo JSON
+            string json = File.ReadAllText(rutaArchivo);
+
+            // Deserializar el JSON a un objeto DTO
+            ObjetoDTO objetoDTO = JsonSerializer.Deserialize<ObjetoDTO>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            // Convertir de DTO a objeto
+            return objetoDTO.ToObjeto();
         }
 
-        private EscenarioData ConvertirEscenarioAData(Escenario escenario)
-        {
-            EscenarioData escenarioData = new EscenarioData();
-            escenarioData.Objetos = new Dictionary<string, ObjetoData>();
-
-            foreach (var kvp in escenario.GetObjetos())
-            {
-                string nombreObjeto = kvp.Key;
-                var objeto = kvp.Value;
-
-                ObjetoData objetoData = new ObjetoData();
-                objetoData.Partes = new Dictionary<string, ParteData>();
-
-                foreach (var kvpParte in objeto.GetPartes())
-                {
-                    string nombreParte = kvpParte.Key;
-                    var parte = kvpParte.Value;
-
-                    ParteData parteData = new ParteData();
-                    parteData.Poligonos = new List<PoligonoData>();
-
-                    foreach (var poligono in parte.GetPoligonos())
-                    {
-                        PoligonoData poligonoData = new PoligonoData();
-                        poligonoData.Color = poligono.GetColor(); 
-                        poligonoData.Puntos = new List<float[]>();
-
-                        foreach (var punto in poligono.GetPuntos())
-                        {
-                            poligonoData.Puntos.Add(new float[] { punto.X, punto.Y, punto.Z });
-                        }
-
-                        parteData.Poligonos.Add(poligonoData);
-                    }
-
-                    objetoData.Partes[nombreParte] = parteData;
-                }
-
-                escenarioData.Objetos[nombreObjeto] = objetoData;
-            }
-
-            return escenarioData;
-        }
-
-        private Escenario ConvertirDataAEscenario(EscenarioData escenarioData)
-        {
-            Escenario escenario = new Escenario();
-
-            foreach (var kvpObjeto in escenarioData.Objetos)
-            {
-                string nombreObjeto = kvpObjeto.Key;
-                var objetoData = kvpObjeto.Value;
-
-                Objeto objeto = new Objeto();
-
-                foreach (var kvpParte in objetoData.Partes)
-                {
-                    string nombreParte = kvpParte.Key;
-                    var parteData = kvpParte.Value;
-
-                    Parte parte = new Parte();
-
-                    foreach (var poligonoData in parteData.Poligonos)
-                    {
-                        List<Punto> puntos = new List<Punto>();
-                        foreach (var puntoArray in poligonoData.Puntos)
-                        {
-                            puntos.Add(new Punto(puntoArray[0], puntoArray[1], puntoArray[2]));
-                        }
-
-                        Poligono poligono = new Poligono(puntos, poligonoData.Color[0], poligonoData.Color[1], poligonoData.Color[2]);
-                        parte.AddPoligono(poligono);
-                    }
-
-                    objeto.AddParte(nombreParte, parte);
-                }
-
-                escenario.AddObjeto(nombreObjeto, objeto);
-            }
-
-            return escenario;
-        }
     }
 
-    public class EscenarioData
+    public class PuntoDTO
     {
-        public Dictionary<string, ObjetoData> Objetos { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
     }
 
-    public class ObjetoData
+    public class PoligonoDTO
     {
-        public Dictionary<string, ParteData> Partes { get; set; }
-    }
-
-    public class ParteData
-    {
-        public List<PoligonoData> Poligonos { get; set; }
-    }
-
-    public class PoligonoData
-    {
+        public List<PuntoDTO> Puntos { get; set; }
         public float[] Color { get; set; }
-        public List<float[]> Puntos { get; set; }
     }
+
+    public class ParteDTO
+    {
+        public List<PoligonoDTO> Poligonos { get; set; }
+        public string Nombre { get; set; }
+        public PuntoDTO CentroDeMasa { get; set; }
+    }
+
+    public class ObjetoDTO
+    {
+        public Dictionary<string, ParteDTO> Partes { get; set; }
+        public PuntoDTO CentroDeMasa { get; set; }
+    }
+
+    internal static class Convertidor
+    {
+        public static PuntoDTO ToDTO(this Punto punto)
+        {
+            return new PuntoDTO { X = punto.X, Y = punto.Y, Z = punto.Z };
+        }
+
+        public static PoligonoDTO ToDTO(this Poligono poligono)
+        {
+            return new PoligonoDTO
+            {
+                Puntos = poligono.GetPuntos().ConvertAll(p => p.ToDTO()),
+                Color = poligono.GetColor()
+            };
+        }
+
+        public static ParteDTO ToDTO(this Parte parte)
+        {
+            return new ParteDTO
+            {
+
+                Poligonos = parte.GetPoligonos().ConvertAll(p => p.ToDTO()),
+                CentroDeMasa = parte.GetCentroDeMasa().ToDTO()
+            };
+        }
+
+        public static ObjetoDTO ToDTO(this Objeto objeto)
+        {
+            return new ObjetoDTO
+            {
+                Partes = objeto.GetPartes().ToDictionary(
+            kvp => kvp.Key, // La clave es el nombre de la parte
+            kvp => new ParteDTO
+            {
+                Nombre = kvp.Key,
+                Poligonos = kvp.Value.GetPoligonos().ConvertAll(p => p.ToDTO()),
+                CentroDeMasa = kvp.Value.GetCentroDeMasa().ToDTO()
+            }
+        ),
+                CentroDeMasa = objeto.GetCentroDeMasa().ToDTO()
+            };
+        }
+
+        public static Punto ToPunto(this PuntoDTO puntoDTO)
+        {
+            return new Punto(puntoDTO.X, puntoDTO.Y, puntoDTO.Z);
+        }
+
+        public static Poligono ToPoligono(this PoligonoDTO poligonoDTO)
+        {
+            List<Punto> puntos = poligonoDTO.Puntos.Select(p => p.ToPunto()).ToList();
+
+            // Asegúrate de que el DTO incluya valores separados para r, g, b, si es necesario.
+            // Aquí asumimos que `Color` es un array con tres elementos (r, g, b).
+            if (poligonoDTO.Color.Length != 3)
+            {
+                throw new ArgumentException("El array de color debe tener exactamente 3 elementos.");
+            }
+
+            return new Poligono(puntos, poligonoDTO.Color[0], poligonoDTO.Color[1], poligonoDTO.Color[2]);
+        }
+
+        public static Parte ToParte(this ParteDTO parteDTO)
+        {
+            List<Poligono> poligonos = parteDTO.Poligonos.Select(p => p.ToPoligono()).ToList();
+            Punto centroDeMasa = parteDTO.CentroDeMasa.ToPunto();
+            Parte parte = new Parte();
+            parte.setListaPoligono( poligonos );
+            parte.SetCentroDeMasa( centroDeMasa );
+            return parte;
+        }
+
+        public static Objeto ToObjeto(this ObjetoDTO objetoDTO)
+        {
+            // Convertir el diccionario de partes del DTO a un diccionario de partes del objeto
+            Dictionary<string, Parte> partes = objetoDTO.Partes.ToDictionary(
+                kvp => kvp.Key, // La clave es el nombre de la parte
+                kvp => kvp.Value.ToParte() // Convertir cada ParteDTO a Parte
+            );
+
+            // Convertir el centro de masa del DTO a un Punto
+            Punto centroDeMasa = objetoDTO.CentroDeMasa.ToPunto();
+
+            // Crear un nuevo Objeto con el diccionario de partes y el centro de masa
+            Objeto objeto = new Objeto();
+            objeto.setListaPartes(partes);
+            objeto.SetCentroDeMasa(centroDeMasa);
+
+            return objeto;
+        }
+
+    }
+
 }
+
+

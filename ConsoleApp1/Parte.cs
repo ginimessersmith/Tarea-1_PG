@@ -1,28 +1,30 @@
-﻿using System.Collections.Generic;
+﻿    using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL;
+using OpenTK;
 
 namespace ConsoleApp1
-{
-    internal class Parte
     {
-        private List<Poligono> listaDePoligonos;
-        private Punto centroDeMasa;
-
-        public Parte()
+        internal class Parte
         {
-            listaDePoligonos = new List<Poligono>();
-            centroDeMasa = new Punto(0.0f, 0.0f, 0.0f); // Inicialmente en el origen
-        }
+            private List<Poligono> listaDePoligonos;
+            private Punto centroDeMasa;
 
-        public void AddPoligono(Poligono poligono)
-        {
-            listaDePoligonos.Add(poligono);
-        }
+            public Parte()
+            {
+                listaDePoligonos = new List<Poligono>();
+                centroDeMasa = new Punto(0.0f, 0.0f, 0.0f); // Inicialmente en el origen
+            }
 
-        public void Dibujar()
-        {
-            // Aplicar la traslación al centro de masa antes de dibujar cada polígono
+            public void AddPoligono(Poligono poligono)
+            {
+                listaDePoligonos.Add(poligono);
+            }
+
+            public void Dibujar()
+            {
             GL.PushMatrix();
+
+            // Aplicar la traslación al centro de masa antes de dibujar cada polígono
             GL.Translate(centroDeMasa.X, centroDeMasa.Y, centroDeMasa.Z);
 
             foreach (var poligono in listaDePoligonos)
@@ -33,14 +35,39 @@ namespace ConsoleApp1
             GL.PopMatrix();
         }
 
-        public void SetCentroDeMasa(Punto nuevoCentro)
+            public void SetCentroDeMasa(Punto nuevoCentro)
+            {
+                centroDeMasa = nuevoCentro;
+
+            }
+
+            public List<Poligono> GetPoligonos()
+            {
+                return listaDePoligonos;
+            }
+
+        public void AjustarCentroDeMasa(Punto nuevoCentro)
         {
-            centroDeMasa = nuevoCentro;
+            foreach (var poligono in listaDePoligonos)
+            {
+                poligono.AjustarCentroDeMasa(nuevoCentro);
+            }
         }
 
-        public List<Poligono> GetPoligonos()
+        public Punto GetCentroDeMasa()
         {
-            return listaDePoligonos;
+            return centroDeMasa;
+        }
+
+        public void setListaPoligono(List<Poligono> lista) { 
+            this.listaDePoligonos = lista;
+        }
+        public void ApplyTransformation(Matrix4 transformation)
+        {
+            foreach (var poligono in listaDePoligonos)
+            {
+                poligono.ApplyTransformation(transformation);
+            }
         }
     }
-}
+    }
