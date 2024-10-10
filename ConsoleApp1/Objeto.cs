@@ -1,107 +1,119 @@
 ﻿using System.Collections.Generic;
+using ConsoleApp1.Interfaces;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 namespace ConsoleApp1
 {
-    internal class Objeto
+    internal class Objeto:IGraphics
     {
-        // Cambiar listaDePartes de List a Dictionary
-        private Dictionary<string, Parte> listaDePartes;
-        private Punto centroDeMasa;
-        private float anguloRotacion;
-        private float ejeX, ejeY, ejeZ;
-        private Matrix4 transformationMatrix;
-        private Vector3 ejeRotacion;
+        // Cambiar listaDePartes de List a Dictionary:
+        private Dictionary<string, Parte> partes;
+        public Punto centro { get; set; }
 
-
+        //Punto IGraphics.centro { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public Objeto()
-        {
-    
-            listaDePartes = new Dictionary<string, Parte>();
-            centroDeMasa = new Punto(0.0f, 0.0f, 0.0f); // Inicialmente en el origen
-            anguloRotacion = 0.0f;
-            ejeX = 0.0f;
-            ejeY = 0.0f;
-            ejeZ = 0.0f;
-            transformationMatrix = Matrix4.Identity;
-            ejeRotacion = Vector3.UnitY;
+        { 
+            this.centro = new Punto();
+            partes = new Dictionary<string, Parte>();
         }
 
-        // Cambiar AddParte para recibir un nombre de parte
-        public void AddParte(string nombreParte, Parte parte)
+        public Objeto(Punto punto)
         {
-            listaDePartes[nombreParte] = parte; // Añadir o actualizar la parte
+            this.centro = punto;
+            partes = new Dictionary<string, Parte>();
         }
 
-        public void Rotar(Vector3 axis, float angleInDegrees)
+        public Objeto(Punto punto, Dictionary<string, Parte>() partes)
         {
-            ejeRotacion = axis;
-            anguloRotacion += angleInDegrees;
+            this.centro = punto;
+            this.partes = partes;
         }
 
-        public void Dibujar()
+        public void addParte(string key, Parte value) 
         {
-            GL.PushMatrix();
-
-            // Mover al centro de masa
-            GL.Translate(-centroDeMasa.X, -centroDeMasa.Y, -centroDeMasa.Z);
-
-            // Aplicar la rotación
-            GL.Rotate(anguloRotacion, ejeRotacion.X, ejeRotacion.Y, ejeRotacion.Z);
-
-            // Dibujar cada parte
-            foreach (var parte in listaDePartes.Values)
+            this.partes.Add(key, value);
+            this.centro = calcularCentroMasa();               
+        }
+        public Punto calcularCentroMasa()
+        {
+            if (partes.Count==0)
             {
-                parte.Dibujar();
+                return new Punto(0.0f,0.0f,0.0f);
             }
-
-            GL.PopMatrix();
-        }
-
-        public void SetCentroDeMasa(Punto nuevoCentro)
-        {
-            centroDeMasa = nuevoCentro;
-            AjustarCentroDeMasa();
-        }
-
-        // Obtener una parte por su nombre
-        public Parte GetParte(string nombreParte)
-        {
-            return listaDePartes.ContainsKey(nombreParte) ? listaDePartes[nombreParte] : null;
-        }
-
-        // Eliminar una parte por su nombre (Delete)
-        public bool RemoveParte(string nombreParte)
-        {
-            if (listaDePartes.ContainsKey(nombreParte))
+            else 
             {
-                listaDePartes.Remove(nombreParte);
-                return true;
-            }
-            return false;
-        }
+                float ejeX = 0;
+                float ejeY = 0;
+                float ejeZ = 0;
 
-        // Obtener todas las partes
-        public Dictionary<string, Parte> GetPartes()
-        {
-            return listaDePartes;
-        }
-        private void AjustarCentroDeMasa()
-        {
-            foreach (var parte in listaDePartes.Values)
-            {
-                parte.AjustarCentroDeMasa(centroDeMasa);
+                foreach (var valor in partes) 
+                { 
+                    Parte parte = valor.Value;
+                    ejeX += parte.calcularCentroMasa().Y;
+                    ejeY += parte.calcularCentroMasa().Y;
+                    ejeZ += parte.calcularCentroMasa().Z;
+                }
+
+                int numPartes = partes.Count;
+                float promedioEjeX = ejeX/numPartes;
+                float promedioEjeY = ejeY/numPartes;
+                float promedioEjeZ = ejeZ/numPartes;
+
+                return new Punto(promedioEjeX, promedioEjeY, promedioEjeZ);
             }
         }
 
-        public Punto GetCentroDeMasa()
+        public void dibujar()
         {
-            return centroDeMasa;
+            foreach (var valor in partes)
+            {
+                Parte parte = valor.Value;
+                parte.dibujar();
+            }
         }
 
-        public void setListaPartes(Dictionary<string, Parte> nuevaListaDePartes) { 
-        this.listaDePartes = nuevaListaDePartes;
+        public void escalar(float factor)
+        {
+            foreach(var valor in partes)
+            {
+                Parte parte = valor.Value;
+                parte.setCentro(this.centro);
+                parte.escalar(factor);
+            }
+
+            this.centro = calcularCentroMasa();
+        }
+
+        public void rotar(Punto angulo)
+        {
+            foreach (var valor in partes)
+            {
+                Parte parte = valor.Value;
+                parte.setCentro(this.centro);
+                parte.rotar(angulo);
+            }
+            this.centro = calcularCentroMasa();
+        }
+
+        public void setCentro(Punto newCentro)
+        {
+            foreach (var valor in partes)
+            {
+                Parte parte = valor.Value;
+                parte.setCentro(newCentro);
+            }
+        }
+
+        public void trasladar(Punto valorTrasladar)
+        {
+            foreach (var valor in partes)
+            {
+                Parte parte = valor.Value;
+                parte.setCentro(this.centro);
+                parte.trasladar(valorTrasladar);
+            }
+            this.centro = calcularCentroMasa();
         }
     }
 }
